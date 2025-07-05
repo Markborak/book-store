@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Filter, Star } from 'lucide-react';
-import { booksAPI } from '../services/api';
-import toast from 'react-hot-toast';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Search, Filter, Star } from "lucide-react";
+import { booksAPI } from "../services/api";
+import toast from "react-hot-toast";
+
+const API_BASE = import.meta.env.VITE_API_URL?.replace("/api", "") || "";
 
 interface Book {
   _id: string;
@@ -19,9 +21,9 @@ const Books = () => {
   const [books, setBooks] = useState<Book[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [sortBy, setSortBy] = useState('createdAt');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [sortBy, setSortBy] = useState("createdAt");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -38,7 +40,7 @@ const Books = () => {
       const response = await booksAPI.getCategories();
       setCategories(response.data.data);
     } catch (error) {
-      toast.error('Failed to load categories');
+      toast.error("Failed to load categories");
     }
   };
 
@@ -51,14 +53,14 @@ const Books = () => {
         search: searchTerm || undefined,
         category: selectedCategory || undefined,
         sortBy,
-        sortOrder: 'desc'
+        sortOrder: "desc",
       };
 
       const response = await booksAPI.getAll(params);
       setBooks(response.data.data);
       setTotalPages(response.data.pagination.pages);
     } catch (error) {
-      toast.error('Failed to load books');
+      toast.error("Failed to load books");
     } finally {
       setLoading(false);
     }
@@ -77,7 +79,8 @@ const Books = () => {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Our Books</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Discover transformative books that will help you achieve your goals and unlock your potential.
+            Discover transformative books that will help you achieve your goals
+            and unlock your potential.
           </p>
         </div>
 
@@ -131,9 +134,9 @@ const Books = () => {
             {/* Clear Filters */}
             <button
               onClick={() => {
-                setSearchTerm('');
-                setSelectedCategory('');
-                setSortBy('createdAt');
+                setSearchTerm("");
+                setSelectedCategory("");
+                setSortBy("createdAt");
                 setCurrentPage(1);
               }}
               className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
@@ -150,31 +153,49 @@ const Books = () => {
           </div>
         ) : books.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-xl text-gray-600">No books found matching your criteria.</p>
+            <p className="text-xl text-gray-600">
+              No books found matching your criteria.
+            </p>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
               {books.map((book) => (
-                <div key={book._id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                <div
+                  key={book._id}
+                  className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+                >
                   <img
-                    src={`http://localhost:5000/${book.coverImage}`}
+                    src={`${API_BASE}/${book.coverImage}`}
                     alt={book.title}
                     className="w-full h-64 object-cover"
                   />
+
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-blue-600 font-medium">{book.category}</span>
+                      <span className="text-sm text-blue-600 font-medium">
+                        {book.category}
+                      </span>
                       <div className="flex items-center space-x-1">
                         <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                        <span className="text-sm text-gray-600">{book.rating}</span>
+                        <span className="text-sm text-gray-600">
+                          {book.rating}
+                        </span>
                       </div>
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{book.title}</h3>
-                    <p className="text-gray-600 mb-4 line-clamp-3">{book.description}</p>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      {book.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4 line-clamp-3">
+                      {book.description}
+                    </p>
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-2xl font-bold text-blue-800">KES {book.price}</span>
-                      <span className="text-sm text-gray-500">{book.salesCount} sold</span>
+                      <span className="text-2xl font-bold text-blue-800">
+                        KES {book.price}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        {book.salesCount} sold
+                      </span>
                     </div>
                     <Link
                       to={`/books/${book._id}`}
@@ -197,23 +218,27 @@ const Books = () => {
                 >
                   Previous
                 </button>
-                
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-4 py-2 rounded-lg ${
-                      currentPage === page
-                        ? 'bg-blue-800 text-white'
-                        : 'bg-white border border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-                
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-4 py-2 rounded-lg ${
+                        currentPage === page
+                          ? "bg-blue-800 text-white"
+                          : "bg-white border border-gray-300 hover:bg-gray-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  )
+                )}
+
                 <button
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  onClick={() =>
+                    setCurrentPage(Math.min(totalPages, currentPage + 1))
+                  }
                   disabled={currentPage === totalPages}
                   className="px-4 py-2 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                 >
