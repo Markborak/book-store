@@ -259,6 +259,20 @@ app.get("/health", (req, res) => {
     version: "1.0.0",
   });
 });
+// DB connection test route
+app.get("/debug-db", async (req, res) => {
+  try {
+    const mongooseState = mongoose.connection.readyState;
+    res.json({
+      connected: mongooseState === 1,
+      host: mongoose.connection.host,
+      db: mongoose.connection.name,
+      status: mongooseState,
+    });
+  } catch (error) {
+    res.status(500).json({ connected: false, error: error.message });
+  }
+});
 
 // API documentation endpoint
 app.get("/api", (req, res) => {
