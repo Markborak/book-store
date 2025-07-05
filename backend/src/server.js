@@ -193,6 +193,7 @@ app.use(
     origin:
       process.env.FRONTEND_URL || "https://daringachieversnetwork.netlify.app",
     credentials: true,
+    optionsSuccessStatus: 200,
   })
 );
 
