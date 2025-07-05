@@ -190,8 +190,9 @@ app.use(
 
 app.use(
   cors({
-    origin:
-      process.env.FRONTEND_URL || "https://daringachieversnetwork.netlify.app",
+    origin: (
+      process.env.FRONTEND_URL || "https://daringachieversnetwork.netlify.app"
+    ).replace(/\/$/, ""),
     credentials: true,
     optionsSuccessStatus: 200,
   })
