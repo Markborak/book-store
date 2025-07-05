@@ -147,29 +147,23 @@ app.listen(PORT, () => {
 
 export default app;*/
 
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import path from "path";
+import fs from "fs";
+import "express-async-errors";
 
-
-
-
-
-
-import express from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import dotenv from 'dotenv';
-import mongoose from 'mongoose';
-import path from 'path';
-import fs from 'fs';
-import 'express-async-errors';
-
-import { errorHandler } from './middleware/errorHandler.js';
-import { logger } from './utils/logger.js';
-import authRoutes from './routes/auth.js';
-import bookRoutes from './routes/books.js';
-import paymentRoutes from './routes/payments.js';
-import adminRoutes from './routes/admin.js';
-import downloadRoutes from './routes/downloads.js';
+import { errorHandler } from "./middleware/errorHandler.js";
+import { logger } from "./utils/logger.js";
+import authRoutes from "./routes/auth.js";
+import bookRoutes from "./routes/books.js";
+import paymentRoutes from "./routes/payments.js";
+import adminRoutes from "./routes/admin.js";
+import downloadRoutes from "./routes/downloads.js";
 
 // Load environment variables
 dotenv.config();
@@ -178,22 +172,27 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Create required directories
-const requiredDirs = ['uploads/books', 'uploads/covers', 'logs'];
-requiredDirs.forEach(dir => {
+const requiredDirs = ["uploads/books", "uploads/covers", "logs"];
+requiredDirs.forEach((dir) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 });
 
 // Security middleware
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
 
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin:
+      process.env.FRONTEND_URL || "https://daringachieversnetwork.netlify.app/",
+    credentials: true,
+  })
+);
 
 // Rate limiting
 const limiter = rateLimit({
@@ -201,10 +200,10 @@ const limiter = rateLimit({
   max: 100,
   message: {
     success: false,
-    message: 'Too many requests from this IP, please try again later.'
-  }
+    message: "Too many requests from this IP, please try again later.",
+  },
 });
-app.use('/api/', limiter);
+app.use("/api/", limiter);
 
 // Payment-specific rate limiting
 const paymentLimiter = rateLimit({
@@ -212,26 +211,30 @@ const paymentLimiter = rateLimit({
   max: 3,
   message: {
     success: false,
-    message: 'Too many payment requests, please try again later.'
-  }
+    message: "Too many payment requests, please try again later.",
+  },
 });
-app.use('/api/payments', paymentLimiter);
+app.use("/api/payments", paymentLimiter);
 
 // Body parser middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Serve static files
-app.use('/uploads', express.static('uploads'));
+app.use("/uploads", express.static("uploads"));
 
 // Database connection with debug logs and updated options
 const connectDB = async () => {
   try {
-    logger.info(`Connecting to MongoDB with URI: ${process.env.MONGODB_URI ? '[REDACTED]' : 'MONGODB_URI NOT SET'}`);
+    logger.info(
+      `Connecting to MongoDB with URI: ${
+        process.env.MONGODB_URI ? "[REDACTED]" : "MONGODB_URI NOT SET"
+      }`
+    );
     const conn = await mongoose.connect(process.env.MONGODB_URI);
     logger.info(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    logger.error('MongoDB connection error:', error);
+    logger.error("MongoDB connection error:", error);
     process.exit(1);
   }
 };
@@ -239,44 +242,44 @@ const connectDB = async () => {
 connectDB();
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/books', bookRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/downloads', downloadRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/books", bookRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/downloads", downloadRoutes);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+app.get("/health", (req, res) => {
+  res.json({
+    status: "OK",
     timestamp: new Date().toISOString(),
-    service: 'Daring Achievers Network API',
-    version: '1.0.0'
+    service: "Daring Achievers Network API",
+    version: "1.0.0",
   });
 });
 
 // API documentation endpoint
-app.get('/api', (req, res) => {
+app.get("/api", (req, res) => {
   res.json({
     success: true,
-    message: 'Daring Achievers Network API',
-    version: '1.0.0',
-    author: 'Mwatha Njoroge',
+    message: "Daring Achievers Network API",
+    version: "1.0.0",
+    author: "Mwatha Njoroge",
     endpoints: {
-      auth: '/api/auth',
-      books: '/api/books',
-      payments: '/api/payments',
-      admin: '/api/admin',
-      downloads: '/api/downloads'
-    }
+      auth: "/api/auth",
+      books: "/api/books",
+      payments: "/api/payments",
+      admin: "/api/admin",
+      downloads: "/api/downloads",
+    },
   });
 });
 
 // 404 handler
-app.use('*', (req, res) => {
+app.use("*", (req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Route not found'
+    message: "Route not found",
   });
 });
 
@@ -284,10 +287,10 @@ app.use('*', (req, res) => {
 app.use(errorHandler);
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received, shutting down gracefully');
+process.on("SIGTERM", () => {
+  logger.info("SIGTERM received, shutting down gracefully");
   mongoose.connection.close(() => {
-    logger.info('MongoDB connection closed');
+    logger.info("MongoDB connection closed");
     process.exit(0);
   });
 });
@@ -295,7 +298,7 @@ process.on('SIGTERM', () => {
 // Start server
 app.listen(PORT, () => {
   logger.info(`Daring Achievers Network API running on port ${PORT}`);
-  logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`Environment: ${process.env.NODE_ENV || "development"}`);
 });
 
 export default app;
