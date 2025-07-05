@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { Plus, Edit, Trash2, Eye, Search } from "lucide-react";
-import { adminAPI } from "../../services/api";
-import toast from "react-hot-toast";
+import React, { useEffect, useState } from 'react';
+import { Plus, Edit, Trash2, Eye, Search } from 'lucide-react';
+import { adminAPI } from '../../services/api';
+import toast from 'react-hot-toast';
 
 interface Book {
   _id: string;
@@ -19,19 +19,13 @@ interface Book {
 const AdminBooks = () => {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  const categories = [
-    "Self-Help",
-    "Motivation",
-    "Business",
-    "Leadership",
-    "Personal Development",
-  ];
+  const categories = ['Self-Help', 'Motivation', 'Business', 'Leadership', 'Personal Development'];
 
   useEffect(() => {
     fetchBooks();
@@ -44,14 +38,14 @@ const AdminBooks = () => {
         page: currentPage,
         limit: 10,
         search: searchTerm || undefined,
-        category: selectedCategory || undefined,
+        category: selectedCategory || undefined
       };
 
       const response = await adminAPI.getBooks(params);
       setBooks(response.data.data);
       setTotalPages(response.data.pagination.pages);
-    } catch {
-      toast.error("Failed to load books");
+    } catch (error) {
+      toast.error('Failed to load books');
     } finally {
       setLoading(false);
     }
@@ -64,22 +58,20 @@ const AdminBooks = () => {
 
     try {
       await adminAPI.deleteBook(id);
-      toast.success("Book deleted successfully");
+      toast.success('Book deleted successfully');
       fetchBooks();
-    } catch {
-      toast.error("Failed to delete book");
+    } catch (error) {
+      toast.error('Failed to delete book');
     }
   };
 
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
     try {
       await adminAPI.updateBook(id, { active: !currentStatus });
-      toast.success(
-        `Book ${!currentStatus ? "activated" : "deactivated"} successfully`
-      );
+      toast.success(`Book ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
       fetchBooks();
-    } catch {
-      toast.error("Failed to update book status");
+    } catch (error) {
+      toast.error('Failed to update book status');
     }
   };
 
@@ -90,9 +82,7 @@ const AdminBooks = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Manage Books</h1>
-            <p className="text-gray-600">
-              Create, edit, and manage your book collection
-            </p>
+            <p className="text-gray-600">Create, edit, and manage your book collection</p>
           </div>
           <button
             onClick={() => setShowCreateForm(true)}
@@ -138,8 +128,8 @@ const AdminBooks = () => {
 
             <button
               onClick={() => {
-                setSearchTerm("");
-                setSelectedCategory("");
+                setSearchTerm('');
+                setSelectedCategory('');
                 setCurrentPage(1);
               }}
               className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
@@ -191,19 +181,13 @@ const AdminBooks = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <img
-                              src={`${import.meta.env.VITE_API_URL}/${
-                                book.coverImage
-                              }`}
+                              src={`http://localhost:5000/${book.coverImage}`}
                               alt={book.title}
                               className="h-16 w-12 object-cover rounded"
                             />
                             <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {book.title}
-                              </div>
-                              <div className="text-sm text-gray-500 line-clamp-2">
-                                {book.description}
-                              </div>
+                              <div className="text-sm font-medium text-gray-900">{book.title}</div>
+                              <div className="text-sm text-gray-500 line-clamp-2">{book.description}</div>
                             </div>
                           </div>
                         </td>
@@ -220,16 +204,14 @@ const AdminBooks = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <button
-                            onClick={() =>
-                              handleToggleStatus(book._id, book.active)
-                            }
+                            onClick={() => handleToggleStatus(book._id, book.active)}
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               book.active
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
                             }`}
                           >
-                            {book.active ? "Active" : "Inactive"}
+                            {book.active ? 'Active' : 'Inactive'}
                           </button>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -243,17 +225,13 @@ const AdminBooks = () => {
                               <Eye className="h-4 w-4" />
                             </a>
                             <button
-                              onClick={() => {
-                                /* TODO: Implement edit */
-                              }}
+                              onClick={() => {/* TODO: Implement edit */}}
                               className="text-yellow-600 hover:text-yellow-900"
                             >
                               <Edit className="h-4 w-4" />
                             </button>
                             <button
-                              onClick={() =>
-                                handleDeleteBook(book._id, book.title)
-                              }
+                              onClick={() => handleDeleteBook(book._id, book.title)}
                               className="text-red-600 hover:text-red-900"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -271,18 +249,14 @@ const AdminBooks = () => {
                 <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200">
                   <div className="flex-1 flex justify-between sm:hidden">
                     <button
-                      onClick={() =>
-                        setCurrentPage(Math.max(1, currentPage - 1))
-                      }
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                       disabled={currentPage === 1}
                       className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                     >
                       Previous
                     </button>
                     <button
-                      onClick={() =>
-                        setCurrentPage(Math.min(totalPages, currentPage + 1))
-                      }
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                       disabled={currentPage === totalPages}
                       className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                     >
@@ -292,44 +266,34 @@ const AdminBooks = () => {
                   <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                     <div>
                       <p className="text-sm text-gray-700">
-                        Showing page{" "}
-                        <span className="font-medium">{currentPage}</span> of{" "}
+                        Showing page <span className="font-medium">{currentPage}</span> of{' '}
                         <span className="font-medium">{totalPages}</span>
                       </p>
                     </div>
                     <div>
                       <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                         <button
-                          onClick={() =>
-                            setCurrentPage(Math.max(1, currentPage - 1))
-                          }
+                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                           disabled={currentPage === 1}
                           className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                         >
                           Previous
                         </button>
-                        {Array.from(
-                          { length: totalPages },
-                          (_, i) => i + 1
-                        ).map((page) => (
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                           <button
                             key={page}
                             onClick={() => setCurrentPage(page)}
                             className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                               currentPage === page
-                                ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
-                                : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                                ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                                : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                             }`}
                           >
                             {page}
                           </button>
                         ))}
                         <button
-                          onClick={() =>
-                            setCurrentPage(
-                              Math.min(totalPages, currentPage + 1)
-                            )
-                          }
+                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                           disabled={currentPage === totalPages}
                           className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                         >
@@ -349,12 +313,9 @@ const AdminBooks = () => {
       {showCreateForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Add New Book
-            </h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Add New Book</h2>
             <p className="text-gray-600 mb-6">
-              Book creation form would go here. This requires file upload
-              functionality.
+              Book creation form would go here. This requires file upload functionality.
             </p>
             <div className="flex space-x-4">
               <button
