@@ -1,4 +1,4 @@
-  .import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Plus, Edit, Trash2, Eye, Search } from "lucide-react";
 import { adminAPI } from "../../services/api";
 import toast from "react-hot-toast";
@@ -50,7 +50,7 @@ const AdminBooks = () => {
       const response = await adminAPI.getBooks(params);
       setBooks(response.data.data);
       setTotalPages(response.data.pagination.pages);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load books");
     } finally {
       setLoading(false);
@@ -66,7 +66,7 @@ const AdminBooks = () => {
       await adminAPI.deleteBook(id);
       toast.success("Book deleted successfully");
       fetchBooks();
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete book");
     }
   };
@@ -78,7 +78,7 @@ const AdminBooks = () => {
         `Book ${!currentStatus ? "activated" : "deactivated"} successfully`
       );
       fetchBooks();
-    } catch (error) {
+    } catch {
       toast.error("Failed to update book status");
     }
   };
