@@ -1,9 +1,9 @@
-import axios from 'axios';
-import { logger } from '../utils/logger.js';
+import axios from "axios";
+import { logger } from "../utils/logger.js";
 
 class WhatsAppService {
   constructor() {
-    this.apiUrl = process.env.WHATSAPP_API_URL || 'https://api.ultramsg.com';
+    this.apiUrl = process.env.WHATSAPP_API_URL || "https://api.ultramsg.com";
     this.instanceId = process.env.WHATSAPP_INSTANCE_ID;
     this.token = process.env.WHATSAPP_TOKEN;
     this.maxRetries = 3;
@@ -13,40 +13,51 @@ class WhatsAppService {
     let attempts = 0;
     while (attempts < this.maxRetries) {
       try {
-        const response = await axios.post(`${this.apiUrl}/${this.instanceId}/messages/chat`, {
-          to: this.formatPhoneNumber(phoneNumber),
-          body: message
-        }, {
-          headers: {
-            'Authorization': `Bearer ${this.token}`,
-            'Content-Type': 'application/json'
+        const response = await axios.post(
+          `${this.apiUrl}/${this.instanceId}/messages/chat?token=${this.token}`,
+          {
+            to: this.formatPhoneNumber(phoneNumber),
+            body: message,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
           }
-        });
+        );
 
         if (response.data.sent) {
-          logger.info('WhatsApp message sent successfully:', { phoneNumber, messageId: response.data.id });
+          logger.info("WhatsApp message sent successfully:", {
+            phoneNumber,
+            messageId: response.data.id,
+          });
           return {
             success: true,
             messageId: response.data.id,
-            response: response.data
+            response: response.data,
           };
         } else {
-          throw new Error('Message not sent: ' + response.data.message);
+          throw new Error("Message not sent: " + response.data.message);
         }
       } catch (error) {
         attempts++;
-        logger.error(`WhatsApp send attempt ${attempts} failed:`, error.response?.data || error.message);
-        
+        logger.error(
+          `WhatsApp send attempt ${attempts} failed:`,
+          error.response?.data || error.message
+        );
+
         if (attempts >= this.maxRetries) {
           return {
             success: false,
             error: error.response?.data || error.message,
-            attempts
+            attempts,
           };
         }
-        
+
         // Wait before retry (exponential backoff)
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 1000));
+        await new Promise((resolve) =>
+          setTimeout(resolve, Math.pow(2, attempts) * 1000)
+        );
       }
     }
   }
@@ -55,49 +66,61 @@ class WhatsAppService {
     let attempts = 0;
     while (attempts < this.maxRetries) {
       try {
-        const response = await axios.post(`${this.apiUrl}/${this.instanceId}/messages/document`, {
-          to: this.formatPhoneNumber(phoneNumber),
-          document: documentUrl,
-          filename: filename,
-          caption: caption || ''
-        }, {
-          headers: {
-            'Authorization': `Bearer ${this.token}`,
-            'Content-Type': 'application/json'
+        const response = await axios.post(
+          `${this.apiUrl}/${this.instanceId}/messages/document?token=${this.token}`,
+          {
+            to: this.formatPhoneNumber(phoneNumber),
+            document: documentUrl,
+            filename: filename,
+            caption: caption || "",
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
           }
-        });
+        );
 
         if (response.data.sent) {
-          logger.info('WhatsApp document sent successfully:', { phoneNumber, filename, messageId: response.data.id });
+          logger.info("WhatsApp document sent successfully:", {
+            phoneNumber,
+            filename,
+            messageId: response.data.id,
+          });
           return {
             success: true,
             messageId: response.data.id,
-            response: response.data
+            response: response.data,
           };
         } else {
-          throw new Error('Document not sent: ' + response.data.message);
+          throw new Error("Document not sent: " + response.data.message);
         }
       } catch (error) {
         attempts++;
-        logger.error(`WhatsApp document send attempt ${attempts} failed:`, error.response?.data || error.message);
-        
+        logger.error(
+          `WhatsApp document send attempt ${attempts} failed:`,
+          error.response?.data || error.message
+        );
+
         if (attempts >= this.maxRetries) {
           return {
             success: false,
             error: error.response?.data || error.message,
-            attempts
+            attempts,
           };
         }
-        
+
         // Wait before retry (exponential backoff)
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 1000));
+        await new Promise((resolve) =>
+          setTimeout(resolve, Math.pow(2, attempts) * 1000)
+        );
       }
     }
   }
 
   async sendEbook(phoneNumber, purchaseLog, downloadUrl) {
     const message = this.createEbookMessage(purchaseLog, downloadUrl);
-    
+
     try {
       // Try to send as document first if file URL is available
       if (purchaseLog.bookId?.fileUrl) {
@@ -107,20 +130,20 @@ class WhatsAppService {
           `${purchaseLog.bookTitle}.pdf`,
           message
         );
-        
+
         if (documentResult.success) {
           return documentResult;
         }
       }
-      
+
       // Fallback to text message with download link
       const textResult = await this.sendMessage(phoneNumber, message);
       return textResult;
     } catch (error) {
-      logger.error('Error sending e-book via WhatsApp:', error);
+      logger.error("Error sending e-book via WhatsApp:", error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -152,32 +175,33 @@ Your journey to greatness starts now! 💪
 
   formatPhoneNumber(phoneNumber) {
     // Remove any non-digit characters
-    const cleaned = phoneNumber.replace(/\D/g, '');
-    
+    const cleaned = phoneNumber.replace(/\D/g, "");
+
     // Convert to format expected by WhatsApp API
-    if (cleaned.startsWith('254')) {
-      return cleaned + '@c.us';
-    } else if (cleaned.startsWith('0')) {
-      return '254' + cleaned.substring(1) + '@c.us';
-    } else if (cleaned.startsWith('7') || cleaned.startsWith('1')) {
-      return '254' + cleaned + '@c.us';
+    if (cleaned.startsWith("254")) {
+      return cleaned + "@c.us";
+    } else if (cleaned.startsWith("0")) {
+      return "254" + cleaned.substring(1) + "@c.us";
+    } else if (cleaned.startsWith("7") || cleaned.startsWith("1")) {
+      return "254" + cleaned + "@c.us";
     }
-    
-    throw new Error('Invalid phone number format');
+
+    throw new Error("Invalid phone number format");
   }
 
   async getInstanceStatus() {
     try {
-      const response = await axios.get(`${this.apiUrl}/${this.instanceId}/instance/status`, {
-        headers: {
-          'Authorization': `Bearer ${this.token}`
-        }
-      });
-      
+      const response = await axios.get(
+        `${this.apiUrl}/${this.instanceId}/instance/status?token=${this.token}`
+      );
+
       return response.data;
     } catch (error) {
-      logger.error('Error getting WhatsApp instance status:', error.response?.data || error.message);
-      throw new Error('Failed to get WhatsApp instance status');
+      logger.error(
+        "Error getting WhatsApp instance status:",
+        error.response?.data || error.message
+      );
+      throw new Error("Failed to get WhatsApp instance status");
     }
   }
 }
