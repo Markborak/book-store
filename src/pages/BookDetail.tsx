@@ -1,8 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Star, Calendar, FileText, Users, ShoppingCart, Phone } from 'lucide-react';
-import { booksAPI, paymentsAPI } from '../services/api';
-import toast from 'react-hot-toast';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import {
+  Star,
+  Calendar,
+  FileText,
+  Users,
+  ShoppingCart,
+  Phone,
+} from "lucide-react";
+import { booksAPI, paymentsAPI } from "../services/api";
+import toast from "react-hot-toast";
 
 interface Book {
   _id: string;
@@ -27,10 +34,11 @@ const BookDetail = () => {
   const [purchasing, setPurchasing] = useState(false);
   const [showPurchaseForm, setShowPurchaseForm] = useState(false);
   const [formData, setFormData] = useState({
-    phoneNumber: '',
-    customerEmail: '',
-    customerName: ''
+    phoneNumber: "",
+    customerEmail: "",
+    customerName: "",
   });
+  const [phoneError, setPhoneError] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -43,34 +51,66 @@ const BookDetail = () => {
       const response = await booksAPI.getById(id!);
       setBook(response.data.data);
     } catch (error) {
-      toast.error('Failed to load book details');
+      toast.error("Failed to load book details");
     } finally {
       setLoading(false);
     }
+  };
+
+  const validatePhoneNumber = (phone: string): boolean => {
+    // Remove non-digit characters
+    const cleaned = phone.replace(/\D/g, "");
+    // Check if starts with 254 and length is 12 digits
+    if (/^254\d{9}$/.test(cleaned)) {
+      return true;
+    }
+    return false;
+  };
+
+  const formatPhoneNumber = (phone: string): string => {
+    const cleaned = phone.replace(/\D/g, "");
+    if (cleaned.startsWith("07")) {
+      return "254" + cleaned.substring(1);
+    } else if (cleaned.startsWith("7")) {
+      return "254" + cleaned;
+    } else if (cleaned.startsWith("254")) {
+      return cleaned;
+    }
+    return cleaned; // Return as is if no match
   };
 
   const handlePurchase = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!book) return;
 
+    // Validate phone number before submission
+    if (!validatePhoneNumber(formData.phoneNumber)) {
+      setPhoneError("Please enter a valid phone number starting with 254");
+      return;
+    } else {
+      setPhoneError(null);
+    }
+
     setPurchasing(true);
     try {
+      const formattedPhone = formatPhoneNumber(formData.phoneNumber);
       const response = await paymentsAPI.initiate({
-        phoneNumber: formData.phoneNumber,
+        phoneNumber: formattedPhone,
         bookId: book._id,
         customerEmail: formData.customerEmail || undefined,
-        customerName: formData.customerName || undefined
+        customerName: formData.customerName || undefined,
       });
 
-      toast.success('Payment initiated! Please check your phone for M-Pesa prompt.');
+      toast.success(
+        "Payment initiated! Please check your phone for M-Pesa prompt."
+      );
       setShowPurchaseForm(false);
-      
+
       // Poll for payment status
       const transactionId = response.data.transactionId;
       pollPaymentStatus(transactionId);
-      
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Payment initiation failed');
+      toast.error(error.response?.data?.message || "Payment initiation failed");
     } finally {
       setPurchasing(false);
     }
@@ -85,11 +125,13 @@ const BookDetail = () => {
         const response = await paymentsAPI.getStatus(transactionId);
         const status = response.data.data.paymentStatus;
 
-        if (status === 'success') {
-          toast.success('Payment successful! Your e-book will be sent to WhatsApp shortly.');
+        if (status === "success") {
+          toast.success(
+            "Payment successful! Your e-book will be sent to WhatsApp shortly."
+          );
           return;
-        } else if (status === 'failed') {
-          toast.error('Payment failed. Please try again.');
+        } else if (status === "failed") {
+          toast.error("Payment failed. Please try again.");
           return;
         }
 
@@ -97,10 +139,12 @@ const BookDetail = () => {
         if (attempts < maxAttempts) {
           setTimeout(poll, 10000); // Check every 10 seconds
         } else {
-          toast.error('Payment status check timed out. Please contact support if payment was deducted.');
+          toast.error(
+            "Payment status check timed out. Please contact support if payment was deducted."
+          );
         }
       } catch (error) {
-        console.error('Error checking payment status:', error);
+        console.error("Error checking payment status:", error);
       }
     };
 
@@ -119,8 +163,12 @@ const BookDetail = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Book not found</h1>
-          <p className="text-gray-600">The book you're looking for doesn't exist.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Book not found
+          </h1>
+          <p className="text-gray-600">
+            The book you're looking for doesn't exist.
+          </p>
         </div>
       </div>
     );
@@ -147,13 +195,13 @@ const BookDetail = () => {
                   {book.category}
                 </span>
               </div>
-              
+
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 {book.title}
               </h1>
-              
+
               <p className="text-xl text-gray-600 mb-6">by {book.author}</p>
-              
+
               <div className="flex items-center space-x-4 mb-6">
                 <div className="flex items-center space-x-1">
                   <Star className="h-5 w-5 text-yellow-500 fill-current" />
@@ -161,7 +209,9 @@ const BookDetail = () => {
                 </div>
                 <div className="flex items-center space-x-1">
                   <Users className="h-5 w-5 text-gray-500" />
-                  <span className="text-gray-600">{book.salesCount} readers</span>
+                  <span className="text-gray-600">
+                    {book.salesCount} readers
+                  </span>
                 </div>
               </div>
 
@@ -193,10 +243,12 @@ const BookDetail = () => {
               </button>
 
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <h3 className="font-semibold text-yellow-800 mb-2">Instant Delivery</h3>
+                <h3 className="font-semibold text-yellow-800 mb-2">
+                  Instant Delivery
+                </h3>
                 <p className="text-yellow-700 text-sm">
-                  After successful payment, your e-book will be automatically sent to your WhatsApp number. 
-                  No waiting, no delays!
+                  After successful payment, your e-book will be automatically
+                  sent to your WhatsApp number. No waiting, no delays!
                 </p>
               </div>
             </div>
@@ -204,14 +256,18 @@ const BookDetail = () => {
 
           {/* Description and Tags */}
           <div className="border-t border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">About This Book</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              About This Book
+            </h2>
             <p className="text-gray-700 text-lg leading-relaxed mb-6">
               {book.description}
             </p>
 
             {book.tags && book.tags.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Tags</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  Tags
+                </h3>
                 <div className="flex flex-wrap gap-2">
                   {book.tags.map((tag, index) => (
                     <span
@@ -232,8 +288,10 @@ const BookDetail = () => {
       {showPurchaseForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Complete Your Purchase</h2>
-            
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Complete Your Purchase
+            </h2>
+
             <form onSubmit={handlePurchase}>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -246,10 +304,19 @@ const BookDetail = () => {
                     required
                     placeholder="254712345678"
                     value={formData.phoneNumber}
-                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    onChange={(e) =>
+                      setFormData({ ...formData, phoneNumber: e.target.value })
+                    }
+                    className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent ${
+                      phoneError
+                        ? "border-red-500 focus:ring-red-500"
+                        : "border-gray-300 focus:ring-blue-500"
+                    }`}
                   />
                 </div>
+                {phoneError && (
+                  <p className="mt-1 text-sm text-red-600">{phoneError}</p>
+                )}
               </div>
 
               <div className="mb-4">
@@ -260,7 +327,9 @@ const BookDetail = () => {
                   type="email"
                   placeholder="your@email.com"
                   value={formData.customerEmail}
-                  onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, customerEmail: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -273,16 +342,22 @@ const BookDetail = () => {
                   type="text"
                   placeholder="Your full name"
                   value={formData.customerName}
-                  onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, customerName: e.target.value })
+                  }
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-blue-800 mb-2">Payment Summary</h3>
+                <h3 className="font-semibold text-blue-800 mb-2">
+                  Payment Summary
+                </h3>
                 <div className="flex justify-between items-center">
                   <span className="text-blue-700">{book.title}</span>
-                  <span className="font-bold text-blue-800">KES {book.price}</span>
+                  <span className="font-bold text-blue-800">
+                    KES {book.price}
+                  </span>
                 </div>
               </div>
 
@@ -299,7 +374,7 @@ const BookDetail = () => {
                   disabled={purchasing}
                   className="flex-1 px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900 transition-colors disabled:opacity-50"
                 >
-                  {purchasing ? 'Processing...' : 'Pay Now'}
+                  {purchasing ? "Processing..." : "Pay Now"}
                 </button>
               </div>
             </form>
