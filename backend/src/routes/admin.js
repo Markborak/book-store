@@ -362,10 +362,67 @@ router.get("/purchases", async (req, res) => {
   }
 });
 
-import path from "path";
+// Manually resend e-book
+router.post("/purchases/:id/resend", async (req, res) => {
+  try {
+    const { id } = req.params;
 
-import express from "express";
-import { validationResult } from "express-validator";
-import { auth, requireRole } from "../middleware/auth.js";
+    const purchaseLog = await PurchaseLog.findOne({
+      _id: id,
+      paymentStatus: "success",
+    }).populate("bookId");
+
+    if (!purchaseLog) {
+      return res.status(404).json({
+        success: false,
+        message: "Purchase record not found or payment not successful",
+      });
+    }
+
+    if (purchaseLog.deliveryAttempts >= 10) {
+      return res.status(400).json({
+        success: false,
+        message: "Maximum delivery attempts reached",
+      });
+    }
+
+    // Resend via WhatsApp
+    const downloadUrl = `${process.env.FRONTEND_URL}/download/${purchaseLog.downloadToken}`;
+    const whatsappResult = await whatsappService.sendEbook(
+      purchaseLog.phoneNumber,
+      purchaseLog,
+      downloadUrl
+    );
+
+    if (whatsappResult.success) {
+      purchaseLog.whatsappDeliveryStatus = "sent";
+      purchaseLog.whatsappMessageId = whatsappResult.messageId;
+    } else {
+      purchaseLog.whatsappDeliveryStatus = "failed";
+    }
+
+    purchaseLog.deliveryAttempts += 1;
+    purchaseLog.lastDeliveryAttempt = new Date();
+    await purchaseLog.save();
+
+    res.json({
+      success: whatsappResult.success,
+      message: whatsappResult.success
+        ? "E-book resent successfully"
+        : "Failed to resend e-book",
+      attempts: purchaseLog.deliveryAttempts,
+    });
+  } catch (error) {
+    logger.error("Resend e-book error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to resend e-book",
+      error:
+        process.env.NODE_ENV === "production"
+          ? "Internal server error"
+          : error.message,
+    });
+  }
+});
 
 export default router;
