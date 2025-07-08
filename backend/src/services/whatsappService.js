@@ -234,7 +234,7 @@ ${downloadUrl}
 Your journey to greatness starts now! 💪
 
 📞 *Support:* mwathanjoroge@gmail.com
-🌐 *Website:* daringachievers.com
+🌐 *Website:* daringachieversnetwork.netlify.app
 
 *Follow us for more inspiring content!*`;
   }
