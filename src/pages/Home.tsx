@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Star, BookOpen, Users, Award, ArrowRight } from 'lucide-react';
-import { booksAPI } from '../services/api';
-import toast from 'react-hot-toast';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Star, BookOpen, Users, Award, ArrowRight } from "lucide-react";
+import { booksAPI } from "../services/api";
+import toast from "react-hot-toast";
 
 interface Book {
   _id: string;
@@ -19,7 +19,7 @@ const Home = () => {
   const [stats, setStats] = useState({
     totalBooks: 0,
     totalSales: 0,
-    avgRating: 0
+    avgRating: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -28,13 +28,13 @@ const Home = () => {
       try {
         const [booksResponse, statsResponse] = await Promise.all([
           booksAPI.getFeatured(),
-          booksAPI.getStats()
+          booksAPI.getStats(),
         ]);
-        
+
         setFeaturedBooks(booksResponse.data.data);
         setStats(statsResponse.data.data);
       } catch (error) {
-        toast.error('Failed to load content');
+        toast.error("Failed to load content");
       } finally {
         setLoading(false);
       }
@@ -63,8 +63,9 @@ const Home = () => {
                 <span className="text-yellow-400 block">Powerful Insights</span>
               </h1>
               <p className="text-xl mb-8 text-blue-100">
-                Discover life-changing books by Mwatha Njoroge, a renowned public speaker 
-                and life coach. Start your journey to greatness today.
+                Discover life-changing books by Mwatha Njoroge, a renowned
+                public speaker and life coach. Start your journey to greatness
+                today.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
@@ -107,21 +108,27 @@ const Home = () => {
               <div className="flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mx-auto mb-4">
                 <BookOpen className="h-8 w-8 text-blue-800" />
               </div>
-              <h3 className="text-3xl font-bold text-gray-900 mb-2">{stats.totalBooks}+</h3>
+              <h3 className="text-3xl font-bold text-gray-900 mb-2">
+                {stats.totalBooks}+
+              </h3>
               <p className="text-gray-600">Published Books</p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center w-16 h-16 bg-yellow-100 rounded-full mx-auto mb-4">
                 <Users className="h-8 w-8 text-yellow-600" />
               </div>
-              <h3 className="text-3xl font-bold text-gray-900 mb-2">{stats.totalSales}+</h3>
+              <h3 className="text-3xl font-bold text-gray-900 mb-2">
+                {stats.totalSales}+
+              </h3>
               <p className="text-gray-600">Happy Readers</p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mx-auto mb-4">
                 <Star className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-3xl font-bold text-gray-900 mb-2">{stats.avgRating.toFixed(1)}</h3>
+              <h3 className="text-3xl font-bold text-gray-900 mb-2">
+                {stats.avgRating.toFixed(1)}
+              </h3>
               <p className="text-gray-600">Average Rating</p>
             </div>
           </div>
@@ -136,27 +143,38 @@ const Home = () => {
               Featured Books
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Discover our most popular and transformative books that have helped 
-              thousands achieve their goals and unlock their potential.
+              Discover our most popular and transformative books that have
+              helped thousands achieve their goals and unlock their potential.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredBooks.map((book) => (
-              <div key={book._id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+              <div
+                key={book._id}
+                className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+              >
                 <img
-                  src={`http://localhost:5000/${book.coverImage}`}
+                  src={`https://book-store-pk35.onrender.com/${book.coverImage}`}
                   alt={book.title}
                   className="w-full h-64 object-cover"
                 />
                 <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{book.title}</h3>
-                  <p className="text-gray-600 mb-4 line-clamp-3">{book.description}</p>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    {book.title}
+                  </h3>
+                  <p className="text-gray-600 mb-4 line-clamp-3">
+                    {book.description}
+                  </p>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-2xl font-bold text-blue-800">KES {book.price}</span>
+                    <span className="text-2xl font-bold text-blue-800">
+                      KES {book.price}
+                    </span>
                     <div className="flex items-center space-x-1">
                       <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                      <span className="text-sm text-gray-600">{book.rating}</span>
+                      <span className="text-sm text-gray-600">
+                        {book.rating}
+                      </span>
                     </div>
                   </div>
                   <Link
@@ -189,8 +207,9 @@ const Home = () => {
             Ready to Transform Your Life?
           </h2>
           <p className="text-xl mb-8 text-blue-100 max-w-3xl mx-auto">
-            Join thousands of readers who have already started their journey to success. 
-            Get instant access to life-changing insights delivered directly to your WhatsApp.
+            Join thousands of readers who have already started their journey to
+            success. Get instant access to life-changing insights delivered
+            directly to your WhatsApp.
           </p>
           <Link
             to="/books"
