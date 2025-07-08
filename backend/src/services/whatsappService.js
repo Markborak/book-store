@@ -222,13 +222,6 @@ class WhatsAppService {
 💰 *Amount:* KES ${purchaseLog.amount}
 📧 *Transaction ID:* ${purchaseLog.transactionId}
 
-📥 *Download your e-book here:*
-${downloadUrl}
-
-⚡ *Important Notes:*
-• This download link is valid for 24 hours
-• You can download up to 5 times
-• Keep this link safe and don't share it
 
 🌟 Thank you for choosing Daring Achievers Network! 
 Your journey to greatness starts now! 💪
