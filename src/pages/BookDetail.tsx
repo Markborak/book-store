@@ -184,7 +184,7 @@ const BookDetail = () => {
             {/* Book Cover */}
             <div className="flex justify-center">
               <img
-                src={`http://localhost:5000/${book.coverImage}`}
+                src={`https://book-store-pk35.onrender.com/${book.coverImage}`}
                 alt={book.title}
                 className="w-full max-w-md rounded-lg shadow-lg"
               />

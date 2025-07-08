@@ -166,7 +166,7 @@ const Books = () => {
                   className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
                 >
                   <img
-                    src={`${API_BASE}/${book.coverImage}`}
+                    src={`https://book-store-pk35.onrender.com/${book.coverImage}`}
                     alt={book.title}
                     className="w-full h-64 object-cover"
                   />
