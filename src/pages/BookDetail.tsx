@@ -129,6 +129,8 @@ const BookDetail = () => {
           toast.success(
             "Payment successful! Your e-book will be sent to WhatsApp shortly."
           );
+          // Refresh book details to update salesCount
+          await fetchBook();
           return;
         } else if (status === "failed") {
           toast.error("Payment failed. Please try again.");
