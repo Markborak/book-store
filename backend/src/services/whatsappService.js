@@ -124,9 +124,19 @@ class WhatsAppService {
     try {
       // Try to send as document first if file URL is available
       if (purchaseLog.bookId?.fileUrl) {
+        // Construct full public URL for the document
+        const backendUrl =
+          process.env.BACKEND_URL || "https://book-store-pk35.onrender.com";
+        const publicFileUrl = purchaseLog.bookId.fileUrl.startsWith("http")
+          ? purchaseLog.bookId.fileUrl
+          : `${backendUrl.replace(
+              /\/$/,
+              ""
+            )}/${purchaseLog.bookId.fileUrl.replace(/^\/+/, "")}`;
+
         const documentResult = await this.sendDocument(
           phoneNumber,
-          purchaseLog.bookId.fileUrl,
+          publicFileUrl,
           `${purchaseLog.bookTitle}.pdf`,
           message
         );
