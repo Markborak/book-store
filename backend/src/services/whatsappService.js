@@ -174,7 +174,9 @@ class WhatsAppService {
         : `${
             process.env.FRONTEND_URL ||
             "https://daringachieversnetwork.netlify.app"
-          }/download/${purchaseLog._id}`;
+          }/download/${
+            purchaseLog._id || purchaseLog._doc?._id || purchaseLog.id
+          }`;
 
     const message = this.createEbookMessage(purchaseLog, validDownloadUrl);
 
