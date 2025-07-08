@@ -167,7 +167,16 @@ class WhatsAppService {
    * @returns {Promise<object>} Result object with success status and messageId or error.
    */
   async sendEbook(phoneNumber, purchaseLog, downloadUrl) {
-    const message = this.createEbookMessage(purchaseLog, downloadUrl);
+    // Fix: Ensure downloadUrl is defined and valid
+    const validDownloadUrl =
+      downloadUrl && typeof downloadUrl === "string"
+        ? downloadUrl
+        : `${
+            process.env.FRONTEND_URL ||
+            "https://daringachieversnetwork.netlify.app"
+          }/download/${purchaseLog._id}`;
+
+    const message = this.createEbookMessage(purchaseLog, validDownloadUrl);
 
     try {
       // Construct full public URL for the document
