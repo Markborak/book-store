@@ -1,20 +1,44 @@
+/**
+ * WhatsAppService class handles sending messages and documents via the UltraMsg WhatsApp API.
+ * It supports sending text messages, documents, and e-books with retry logic and error handling.
+ */
 import axios from "axios";
 import { logger } from "../utils/logger.js";
 
 class WhatsAppService {
   constructor() {
-    this.apiUrl = process.env.WHATSAPP_API_URL || "https://api.ultramsg.com";
+    // Normalize apiUrl to remove trailing slash if present
+    let apiUrlRaw = process.env.WHATSAPP_API_URL || "https://api.ultramsg.com";
+    if (apiUrlRaw.endsWith("/")) {
+      apiUrlRaw = apiUrlRaw.slice(0, -1);
+    }
+    this.apiUrl = apiUrlRaw;
+
+    // If the apiUrl already contains the instanceId, avoid appending it again
     this.instanceId = process.env.WHATSAPP_INSTANCE_ID;
     this.token = process.env.WHATSAPP_TOKEN;
-    this.maxRetries = 3;
+    this.maxRetries = 3; // Maximum retry attempts for sending messages/documents
   }
 
+  /**
+   * Sends a text message to a WhatsApp phone number with retry and exponential backoff.
+   * @param {string} phoneNumber - Recipient phone number in international format.
+   * @param {string} message - Text message body to send.
+   * @returns {Promise<object>} Result object with success status and messageId or error.
+   */
   async sendMessage(phoneNumber, message) {
     let attempts = 0;
     while (attempts < this.maxRetries) {
       try {
+        // Construct URL avoiding duplication of instanceId
+        let url = `${this.apiUrl}`;
+        if (!this.apiUrl.includes(this.instanceId)) {
+          url += `/${this.instanceId}`;
+        }
+        url += `/messages/chat?token=${this.token}`;
+
         const response = await axios.post(
-          `${this.apiUrl}/${this.instanceId}/messages/chat?token=${this.token}`,
+          url,
           {
             to: this.formatPhoneNumber(phoneNumber),
             body: message,
@@ -62,12 +86,27 @@ class WhatsAppService {
     }
   }
 
+  /**
+   * Sends a document (e.g., PDF) to a WhatsApp phone number with retry and exponential backoff.
+   * @param {string} phoneNumber - Recipient phone number in international format.
+   * @param {string} documentUrl - Public URL of the document to send.
+   * @param {string} filename - Name of the document file.
+   * @param {string} caption - Optional caption message for the document.
+   * @returns {Promise<object>} Result object with success status and messageId or error.
+   */
   async sendDocument(phoneNumber, documentUrl, filename, caption) {
     let attempts = 0;
     while (attempts < this.maxRetries) {
       try {
+        // Construct URL avoiding duplication of instanceId
+        let url = `${this.apiUrl}`;
+        if (!this.apiUrl.includes(this.instanceId)) {
+          url += `/${this.instanceId}`;
+        }
+        url += `/messages/document?token=${this.token}`;
+
         const response = await axios.post(
-          `${this.apiUrl}/${this.instanceId}/messages/document?token=${this.token}`,
+          url,
           {
             to: this.formatPhoneNumber(phoneNumber),
             document: documentUrl,
@@ -118,32 +157,38 @@ class WhatsAppService {
     }
   }
 
+  /**
+   * Sends an e-book to a WhatsApp phone number.
+   * Attempts to send the e-book as a document first using the public file URL.
+   * Falls back to sending a text message with a download link if document send fails.
+   * @param {string} phoneNumber - Recipient phone number.
+   * @param {object} purchaseLog - Purchase log object containing book and purchase details.
+   * @param {string} downloadUrl - Public download URL for the e-book.
+   * @returns {Promise<object>} Result object with success status and messageId or error.
+   */
   async sendEbook(phoneNumber, purchaseLog, downloadUrl) {
     const message = this.createEbookMessage(purchaseLog, downloadUrl);
 
     try {
-      // Try to send as document first if file URL is available
-      if (purchaseLog.bookId?.fileUrl) {
-        // Construct full public URL for the document
-        const backendUrl =
-          process.env.BACKEND_URL || "https://book-store-pk35.onrender.com";
-        const publicFileUrl = purchaseLog.bookId.fileUrl.startsWith("http")
-          ? purchaseLog.bookId.fileUrl
-          : `${backendUrl.replace(
-              /\/$/,
-              ""
-            )}/${purchaseLog.bookId.fileUrl.replace(/^\/+/, "")}`;
+      // Construct full public URL for the document
+      const backendUrl =
+        process.env.BACKEND_URL || "https://book-store-pk35.onrender.com";
+      const publicFileUrl = purchaseLog.bookId.fileUrl.startsWith("http")
+        ? purchaseLog.bookId.fileUrl
+        : `${backendUrl.replace(
+            /\/$/,
+            ""
+          )}/${purchaseLog.bookId.fileUrl.replace(/^\/+/, "")}`;
 
-        const documentResult = await this.sendDocument(
-          phoneNumber,
-          publicFileUrl,
-          `${purchaseLog.bookTitle}.pdf`,
-          message
-        );
+      const documentResult = await this.sendDocument(
+        phoneNumber,
+        publicFileUrl,
+        `${purchaseLog.bookTitle}.pdf`,
+        message
+      );
 
-        if (documentResult.success) {
-          return documentResult;
-        }
+      if (documentResult.success) {
+        return documentResult;
       }
 
       // Fallback to text message with download link
@@ -201,9 +246,14 @@ Your journey to greatness starts now! 💪
 
   async getInstanceStatus() {
     try {
-      const response = await axios.get(
-        `${this.apiUrl}/${this.instanceId}/instance/status?token=${this.token}`
-      );
+      // Construct URL avoiding duplication of instanceId
+      let url = `${this.apiUrl}`;
+      if (!this.apiUrl.includes(this.instanceId)) {
+        url += `/${this.instanceId}`;
+      }
+      url += `/instance/status?token=${this.token}`;
+
+      const response = await axios.get(url);
 
       return response.data;
     } catch (error) {
